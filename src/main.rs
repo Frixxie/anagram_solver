@@ -1,9 +1,9 @@
 use regex::Regex;
 use std::char;
-use std::collections::HashMap;
-use std::collections::BTreeSet;
-use std::collections::BTreeMap;
 use std::cmp::Ordering;
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 
@@ -43,7 +43,10 @@ fn main() {
     let dict_list: Vec<&str> = re.split(dict_raw.as_str()).collect();
     let phrase = &args[2];
 
-    let dict = create_dict(dict_raw.to_owned(), 0, 1);
+    let mut dict: String = String::new();
+
+    dict = create_dict(dict_list.to_owned(), dict.to_owned(), 0, 1);
+    //dict = create_dict(dict.to_owned(), dict.to_owned(), 0, 1);
 
     println!("{}", dict);
 
@@ -99,7 +102,7 @@ fn main() {
     }
 
     //let tree = create_btree(dict.replace("\n", " "), lettermap.to_owned());
-        
+
     //let node_phrase = Node {word: phrase.to_string(), val: translate_word_to_num(phrase.to_string(), lettermap.to_owned())};
 
     /*
@@ -130,27 +133,37 @@ fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
     lettermap
 }
 
-fn create_dict(mut dict: String, current_depth: i8, max_depth: i8) -> String {
-    println!("{}", dict.len());
-    if current_depth == max_depth {
-        return dict   
-    } else {
-        let re = Regex::new(r"([^a-zA-Z])+").unwrap();
-        let dict_copy = dict.clone();
-        let dict_list: Vec<&str> = re.split(dict_copy.as_str()).collect();
-
-        for word in dict_list.iter() {
-            for other_word in dict_list.iter() {
-                dict.push_str(format!("{}{} \n", word, other_word).as_str());
-                //println!("{} {}", format!("{} {} ", word, other_word).as_str(), current_depth);
-                dict = create_dict(dict, current_depth + 1, max_depth);
+fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_depth: i8) -> String {
+    if new_dict == "" {
+        for word in &dict {
+            new_dict.push_str(format!("{} ", word).as_str());
+        }
+        //new_dict = create_dict(dict.to_owned(), new_dict.to_owned(), current_depth + 1, max_depth);
+    }
+    if current_depth >= max_depth {
+        return new_dict;
+    }
+    for word in new_dict.to_owned().split_whitespace() {
+        for other_word in &dict {
+            if format!("{}", word) != "" && format!("{}", other_word) != "" {
+                new_dict.push_str(format!("{}{} ", word, other_word).as_str());
+                //println!("{} {} {}", word, other_word, current_depth);
             }
         }
-        dict
     }
+    new_dict = create_dict(
+        dict.to_owned(),
+        new_dict.to_owned(),
+        current_depth + 1,
+        max_depth,
+    );
+    new_dict
 }
 
-fn create_lookuptable(dict: Vec<&str>, lettermap: HashMap<char, i8>) -> BTreeMap<i128, Vec<String>> {
+fn create_lookuptable(
+    dict: Vec<&str>,
+    lettermap: HashMap<char, i8>,
+) -> BTreeMap<i128, Vec<String>> {
     let mut lookuptable: BTreeMap<i128, Vec<String>> = BTreeMap::new();
 
     for word in &dict {
@@ -176,7 +189,10 @@ fn create_btree(dict: String, lettermap: HashMap<char, i8>) -> BTreeSet<Node> {
 
     let matches: Vec<&str> = re.split(dict.as_str()).collect();
     for word in &matches {
-        let node = Node {word: word.to_string(), val: translate_word_to_num(word.to_string(), lettermap.to_owned())};
+        let node = Node {
+            word: word.to_string(),
+            val: translate_word_to_num(word.to_string(), lettermap.to_owned()),
+        };
         if !tree.contains(&node) {
             tree.insert(node);
         }
