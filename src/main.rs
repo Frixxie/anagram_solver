@@ -1,8 +1,35 @@
 use regex::Regex;
 use std::char;
 use std::collections::HashMap;
+use std::collections::BTreeSet;
+use std::collections::BTreeMap;
+use std::cmp::Ordering;
 use std::env;
 use std::fs;
+
+#[derive(Eq)]
+struct Node {
+    word: String,
+    val: i128,
+}
+
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.val.cmp(&other.val)
+    }
+}
+
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        self.val == other.val
+    }
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -11,8 +38,14 @@ fn main() {
         panic!("Usage: program <dict> <phrase>");
     }
 
-    let dict = fs::read_to_string(&args[1]).unwrap();
+    let dict_raw = fs::read_to_string(&args[1]).unwrap();
+    let re = Regex::new(r"([^a-zA-Z])+").unwrap();
+    let dict_list: Vec<&str> = re.split(dict_raw.as_str()).collect();
     let phrase = &args[2];
+
+    let dict = create_dict(dict_raw.to_owned(), 0, 1);
+
+    println!("{}", dict);
 
     let primes: Vec<bool> = seive_of_eratosthenes(103);
     /*
@@ -34,7 +67,7 @@ fn main() {
     }
     */
 
-    let lookuptable = create_lookuptable(dict.replace("\n", " "), lettermap.to_owned());
+    let lookuptable = create_lookuptable(dict_list.to_owned(), lettermap.to_owned());
 
     /*
     for i in lookuptable.keys().zip(lookuptable.values()) {
@@ -64,6 +97,22 @@ fn main() {
     } else {
         println!("No match for {}", phrase)
     }
+
+    //let tree = create_btree(dict.replace("\n", " "), lettermap.to_owned());
+        
+    //let node_phrase = Node {word: phrase.to_string(), val: translate_word_to_num(phrase.to_string(), lettermap.to_owned())};
+
+    /*
+    if tree.contains(node) {
+        println!("Kake!");
+    }
+    */
+
+    /*
+    for node in tree.iter() {
+        println!("{}:{}", node.word, node.val);
+    }
+    */
 }
 
 fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
@@ -81,12 +130,30 @@ fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
     lettermap
 }
 
-fn create_lookuptable(dict: String, lettermap: HashMap<char, i8>) -> HashMap<i128, Vec<String>> {
-    let mut lookuptable: HashMap<i128, Vec<String>> = HashMap::new();
-    let re = Regex::new(r"([^a-zA-Z])+").unwrap();
+fn create_dict(mut dict: String, current_depth: i8, max_depth: i8) -> String {
+    println!("{}", dict.len());
+    if current_depth == max_depth {
+        return dict   
+    } else {
+        let re = Regex::new(r"([^a-zA-Z])+").unwrap();
+        let dict_copy = dict.clone();
+        let dict_list: Vec<&str> = re.split(dict_copy.as_str()).collect();
 
-    let matches: Vec<&str> = re.split(dict.as_str()).collect();
-    for word in &matches {
+        for word in dict_list.iter() {
+            for other_word in dict_list.iter() {
+                dict.push_str(format!("{}{} \n", word, other_word).as_str());
+                //println!("{} {}", format!("{} {} ", word, other_word).as_str(), current_depth);
+                dict = create_dict(dict, current_depth + 1, max_depth);
+            }
+        }
+        dict
+    }
+}
+
+fn create_lookuptable(dict: Vec<&str>, lettermap: HashMap<char, i8>) -> BTreeMap<i128, Vec<String>> {
+    let mut lookuptable: BTreeMap<i128, Vec<String>> = BTreeMap::new();
+
+    for word in &dict {
         let val = translate_word_to_num(word.to_string().to_lowercase(), lettermap.to_owned());
         if !lookuptable.contains_key(&val) {
             let mut list: Vec<String> = Vec::new();
@@ -101,6 +168,20 @@ fn create_lookuptable(dict: String, lettermap: HashMap<char, i8>) -> HashMap<i12
         }
     }
     lookuptable
+}
+
+fn create_btree(dict: String, lettermap: HashMap<char, i8>) -> BTreeSet<Node> {
+    let mut tree: BTreeSet<Node> = BTreeSet::new();
+    let re = Regex::new(r"([^a-zA-Z])+").unwrap();
+
+    let matches: Vec<&str> = re.split(dict.as_str()).collect();
+    for word in &matches {
+        let node = Node {word: word.to_string(), val: translate_word_to_num(word.to_string(), lettermap.to_owned())};
+        if !tree.contains(&node) {
+            tree.insert(node);
+        }
+    }
+    tree
 }
 
 fn translate_word_to_num(word: String, lettermap: HashMap<char, i8>) -> i128 {
