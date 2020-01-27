@@ -134,10 +134,13 @@ fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
 }
 
 fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_depth: i8) -> String {
+    println!("{}", dict.len());
+    let mut i = 0;
     if new_dict == "" {
         for word in &dict {
             if word.len() > 1 {
                 new_dict.push_str(format!("{} ", word).as_str());
+                i += 1;
             }
         }
         //new_dict = create_dict(dict.to_owned(), new_dict.to_owned(), current_depth + 1, max_depth);
@@ -147,12 +150,13 @@ fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_dep
     }
     {
         let copy = new_dict.clone();
-        //println!("{}", copy.len());
+        println!("{}", i);
         for word in copy.split_whitespace() {
             for other_word in &dict {
-                if word.len() > 1 && other_word.len() > 1 {
+                if (word.len() > 1 && other_word.len() > 1) && &word != other_word {
                     new_dict.push_str(format!("{}{} ", word, other_word).as_str());
-                    //println!("{}", new_dict.len());
+                    i += 1;
+                    //println!("{}", i);
                     //println!("{} {} {}", word, other_word, current_depth);
                 }
             }
