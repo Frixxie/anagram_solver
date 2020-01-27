@@ -136,24 +136,31 @@ fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
 fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_depth: i8) -> String {
     if new_dict == "" {
         for word in &dict {
-            new_dict.push_str(format!("{} ", word).as_str());
+            if word.len() > 1 {
+                new_dict.push_str(format!("{} ", word).as_str());
+            }
         }
         //new_dict = create_dict(dict.to_owned(), new_dict.to_owned(), current_depth + 1, max_depth);
     }
     if current_depth >= max_depth {
         return new_dict;
     }
-    for word in new_dict.to_owned().split_whitespace() {
-        for other_word in &dict {
-            if format!("{}", word) != "" && format!("{}", other_word) != "" {
-                new_dict.push_str(format!("{}{} ", word, other_word).as_str());
-                //println!("{} {} {}", word, other_word, current_depth);
+    {
+        let copy = new_dict.clone();
+        //println!("{}", copy.len());
+        for word in copy.split_whitespace() {
+            for other_word in &dict {
+                if word.len() > 1 && other_word.len() > 1 {
+                    new_dict.push_str(format!("{}{} ", word, other_word).as_str());
+                    //println!("{}", new_dict.len());
+                    //println!("{} {} {}", word, other_word, current_depth);
+                }
             }
         }
     }
     new_dict = create_dict(
         dict.to_owned(),
-        new_dict.to_owned(),
+        new_dict,
         current_depth + 1,
         max_depth,
     );
