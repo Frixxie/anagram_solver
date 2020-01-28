@@ -1,35 +1,9 @@
 use regex::Regex;
 use std::char;
-use std::cmp::Ordering;
 use std::collections::BTreeMap;
-use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-
-#[derive(Eq)]
-struct Node {
-    word: String,
-    val: i128,
-}
-
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.val.cmp(&other.val)
-    }
-}
-
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for Node {
-    fn eq(&self, other: &Self) -> bool {
-        self.val == other.val
-    }
-}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -45,21 +19,12 @@ fn main() {
 
     let mut dict: String = String::new();
 
-    dict = create_dict(dict_list.to_owned(), dict.to_owned(), 0, 1);
+    dict = create_dict(dict_list.to_owned(), dict, 0, 1);
     //dict = create_dict(dict.to_owned(), dict.to_owned(), 0, 1);
 
     println!("{}", dict);
 
     let primes: Vec<bool> = seive_of_eratosthenes(103);
-    /*
-    let mut val: i32 = 0;
-    for i in primes.iter() {
-        if i == &true {
-            println!("{}", val)
-        }
-        val += 1;
-    }
-    */
 
     let lettermap = create_lettermap(primes);
 
@@ -100,22 +65,6 @@ fn main() {
     } else {
         println!("No match for {}", phrase)
     }
-
-    //let tree = create_btree(dict.replace("\n", " "), lettermap.to_owned());
-
-    //let node_phrase = Node {word: phrase.to_string(), val: translate_word_to_num(phrase.to_string(), lettermap.to_owned())};
-
-    /*
-    if tree.contains(node) {
-        println!("Kake!");
-    }
-    */
-
-    /*
-    for node in tree.iter() {
-        println!("{}:{}", node.word, node.val);
-    }
-    */
 }
 
 fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
@@ -135,12 +84,10 @@ fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
 
 fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_depth: i8) -> String {
     println!("{}", dict.len());
-    let mut i = 0;
     if new_dict == "" {
         for word in &dict {
             if word.len() > 1 {
                 new_dict.push_str(format!("{} ", word).as_str());
-                i += 1;
             }
         }
         //new_dict = create_dict(dict.to_owned(), new_dict.to_owned(), current_depth + 1, max_depth);
@@ -150,12 +97,10 @@ fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_dep
     }
     {
         let copy = new_dict.clone();
-        println!("{}", i);
         for word in copy.split_whitespace() {
             for other_word in &dict {
                 if (word.len() > 1 && other_word.len() > 1) && &word != other_word {
                     new_dict.push_str(format!("{}{} ", word, other_word).as_str());
-                    i += 1;
                     //println!("{}", i);
                     //println!("{} {} {}", word, other_word, current_depth);
                 }
@@ -192,23 +137,6 @@ fn create_lookuptable(
         }
     }
     lookuptable
-}
-
-fn create_btree(dict: String, lettermap: HashMap<char, i8>) -> BTreeSet<Node> {
-    let mut tree: BTreeSet<Node> = BTreeSet::new();
-    let re = Regex::new(r"([^a-zA-Z])+").unwrap();
-
-    let matches: Vec<&str> = re.split(dict.as_str()).collect();
-    for word in &matches {
-        let node = Node {
-            word: word.to_string(),
-            val: translate_word_to_num(word.to_string(), lettermap.to_owned()),
-        };
-        if !tree.contains(&node) {
-            tree.insert(node);
-        }
-    }
-    tree
 }
 
 fn translate_word_to_num(word: String, lettermap: HashMap<char, i8>) -> i128 {
