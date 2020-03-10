@@ -17,12 +17,12 @@ fn main() {
     let dict_list: Vec<&str> = re.split(dict_raw.as_str()).collect();
     let phrase = &args[2];
 
-    let mut dict: String = String::new();
+    //let mut dict: String = String::new();
 
-    dict = create_dict(dict_list.to_owned(), dict, 0, 1);
+    //dict = create_dict(dict_list.to_owned(), dict, 0, 1);
     //dict = create_dict(dict.to_owned(), dict.to_owned(), 0, 1);
 
-    println!("{}", dict);
+    //println!("{}", dict);
 
     let primes: Vec<bool> = seive_of_eratosthenes(103);
 
