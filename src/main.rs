@@ -130,7 +130,7 @@ fn create_lookuptable(
             lookuptable.insert(val, list);
         } else {
             let mut list: Vec<String> = lookuptable.get(&val).unwrap().to_vec();
-            if !list.contains(&word.to_string().to_lowercase()) {
+            if !list.contains(&word.to_string().to_lowercase()) && word.len() > 1 {
                 list.push(word.to_string().to_lowercase());
                 lookuptable.insert(val, list);
             }
