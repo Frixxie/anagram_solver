@@ -82,6 +82,7 @@ fn create_lettermap(primes: Vec<bool>) -> HashMap<char, i8> {
     lettermap
 }
 
+/*
 fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_depth: i8) -> String {
     println!("{}", dict.len());
     if new_dict == "" {
@@ -115,6 +116,7 @@ fn create_dict(dict: Vec<&str>, mut new_dict: String, current_depth: i8, max_dep
     );
     new_dict
 }
+*/
 
 fn create_lookuptable(
     dict: Vec<&str>,
